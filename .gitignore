@@ -1,3 +1,5 @@
 # gitignore
 
 programs/ising/src
+programs/hash/src
+programs/delaunayrefinement/src
