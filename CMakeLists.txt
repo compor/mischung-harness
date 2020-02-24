@@ -59,7 +59,11 @@ set(HARNESS_CONFIG_DIR "${CMAKE_CURRENT_SOURCE_DIR}/config")
 
 # add_definitions()
 
-check_include_file(unistd.h HAVE_UNISTD_H)
+check_include_file(getopt.h HAVE_GETOPT_H)
+
+if(HAVE_GETOPT_H)
+  add_definitions(-DHAVE_GETOPT_H)
+endif()
 
 include_directories(${CMAKE_BINARY_DIR})
 
