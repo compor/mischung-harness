@@ -35,15 +35,6 @@ endif()
 
 set(HARNESS_BMK_SOURCE_SUBDIR "src")
 
-set(HARNESS_CMAKE_PIPELINE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake/pipelines/")
-
-# aggregate list variables for appending commands per each benchmark without
-# editing each cmake file separately
-set(HARNESS_CMAKE_FRAGMENT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake/fragments/")
-set(HARNESS_CMAKE_BINARY_FRAGMENT_DIR
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake/fragments/")
-set(HARNESS_CMAKE_FRAGMENT_FILES "")
-
 set(HARNESS_LLVMIR_CMAKE_FRAGMENT_FILES "")
 set(HARNESS_END_CMAKE_FRAGMENT_FILES "")
 
@@ -82,29 +73,24 @@ if(HARNESS_USE_LLVM)
   endif()
 endif()
 
-list(APPEND CMAKE_MODULE_PATH "${HARNESS_CMAKE_PIPELINE_DIR}")
-list(APPEND CMAKE_MODULE_PATH "${HARNESS_CMAKE_FRAGMENT_DIR}")
 list(APPEND CMAKE_MODULE_PATH "${HARNESS_CMAKE_BINARY_FRAGMENT_DIR}")
 
+set(HARNESS_CMAKE_FRAGMENT_FILES "")
+
 if(LLVM_IR_UTIL_FOUND)
-  if(NOT HARNESS_PIPELINE_CONFIG_FILE)
-    message(WARNING "Benchmark config file is not set")
-  elseif(NOT EXISTS ${HARNESS_PIPELINE_CONFIG_FILE})
-    message(
-      WARNING
-        "Benchmark config file does not exist: ${HARNESS_PIPELINE_CONFIG_FILE}")
-  else()
-    file(STRINGS ${HARNESS_PIPELINE_CONFIG_FILE} PIPELINES)
+  list(
+    APPEND CMAKE_MODULE_PATH
+           "${CMAKE_CURRENT_SOURCE_DIR}/cmake/llvm-ir-cmake-pipelines/cmake/")
+  include(LLVMIRPipelines)
+
+  set(FRAGMENT_FILE "main_fragment")
+
+  llvmir_pipelines_setup(DEPENDS BMK_PROJECT_NAME OUTPUT_FILE ${FRAGMENT_FILE})
+
+  # check if there are any pipelines configured
+  if(LLVMIR_PIPELINES_TO_INCLUDE)
+    list(APPEND HARNESS_CMAKE_FRAGMENT_FILES "${FRAGMENT_FILE}")
   endif()
-
-  foreach(PLINE ${PIPELINES})
-    message(STATUS "including pipeline: ${PLINE}")
-    include(${PLINE})
-  endforeach()
-
-  create_file_fragment(
-    FILENAME ${HARNESS_CMAKE_BINARY_FRAGMENT_DIR}/BasicFragment.cmake PIPELINES
-    ${PIPELINES})
 endif()
 
 #
@@ -127,9 +113,6 @@ endif()
 #
 
 set(CMAKE_INSTALL_MESSAGE "LAZY")
-
-# concatenate fragment lists
-set(HARNESS_CMAKE_FRAGMENT_FILES BasicFragment)
 
 file(STRINGS ${HARNESS_BMK_CONFIG_FILE} BENCHMARKS)
 
