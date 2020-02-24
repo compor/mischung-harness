@@ -14,8 +14,7 @@ endif()
 set(BMK_LINKER_LANG "C")
 list(APPEND BMK_LANG "C")
 
-# set(SOURCES
-# ising.c)
+# set(SOURCES ising.c)
 
 file(
   GLOB CXXSOURCES
@@ -54,8 +53,9 @@ target_include_directories(
 target_link_libraries(${BMK_PROJECT_NAME} m)
 
 # this property is required by our parasitic targets
-set_target_properties(${BMK_PROJECT_NAME} PROPERTIES LINKER_LANGUAGE
-                                                     ${BMK_LINKER_LANG})
+set_target_properties(
+  ${BMK_PROJECT_NAME} PROPERTIES LINKER_LANGUAGE ${BMK_LINKER_LANG}
+                                 RUNTIME_OUTPUT_DIRECTORY exe)
 
 # this property is used internally by our harness because benchmark names and
 # their main targets have different names
